@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="http://www.springframework.org/schema/security 
+						http://www.springframework.org/schema/security/spring-security-4.0.xsd
+						http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	
+	<!-- 스프링 시큐리티를 쓰는 목적은 인증, 인가, 권한에 대한 것에 초점이 맞춰져 있다. -->
+	<!-- 직접 구현을 해도 상관없지만, 많은 번거로움이 따르므로 보안이 중요하다면 스프링 시큐리티를 이용하는것이 좋다. -->
+	<!-- 스프링 시큐리티는 필터 기반이기 때문에 웹과 관련된 곳에만 사용이 가능하다. -->
+	<bean id="passwordEncoder" class="org.springframework.security.crypto.password.StandardPasswordEncoder">
+	</bean>
+	
+	<security:http pattern="/admin/js/**" security="none" />
+	<security:http pattern="/admin/css/**" security="none" />
+	<security:http pattern="/admin/fonts/**" security="none" />
+	<security:http pattern="/admin/images/**" security="none" />
+	<security:http pattern="/admin/img/**" security="none" />
+	
+	<!-- 지금 내 웹 사이트의 경우 맨 앞 경로에 admin이 포함되기 때문에 특수한 경우를 맨 앞으로 빼줘야 한다. -->
+	<!-- 밑에와 같이 하면 된다. 스프링 시큐리티 4밑에 버전들은
+	 					login-page="/admin/login"
+					    login-processing-url="/admin/login"와 같이 하면 에러가 낫는데, 4버전 부터는 해결됬다.-->
+	<security:http use-expressions="true">
+		<!-- <security:custom-filter position="" ref="" /> -->
+		<security:csrf disabled="true" />	<!-- SpringSecurity4부터는 CSRF보안 설정을 반드시 해야하는데 그것을 안쓰게 하는 설정. -->
+		<security:intercept-url pattern="/admin/login" access="permitAll" />
+		
+		<!-- always-use-default-target="true" : 로그인 성공후에 항상 default-target-url에 설정한 곳으로 갈지 말지 설정 -->
+		<security:form-login login-page="/admin/login"
+							 login-processing-url="/admin/login"
+							 username-parameter="id"
+							 authentication-failure-url="/admin/login?error=error"
+							 always-use-default-target="false"		
+							 password-parameter="password"
+							 default-target-url="/admin/main" />	<!-- 로그인에 성공시 이전에 요청한 페이지로 이동한다. 그런데 옆에 처럼 해놔도 이전에 요청한 페이지로 가진다... -->
+		<security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />	<!-- 여기에 굳이 method="GET"을 하지 않아도 된다. /admin/logind는 post방식인데 그냥 통과한다. -->
+		<security:logout logout-url="/admin/logout" 
+						 logout-success-url="/admin/login"
+						 invalidate-session="true" />	<!-- invalidate-session은 true를 지정하지 않아도 기본값이 true이다. -->
+	</security:http>
+	
+	<bean id="loginUserDetailService" class="egovframework.example.admin.login.service.impl.LoginUserDetailService" />
+	
+	<security:authentication-manager>
+		<security:authentication-provider user-service-ref="loginUserDetailService">
+			<!-- <security:jdbc-user-service data-source-ref="dataSource" 
+										users-by-username-query="SELECT id as username, password, is_active AS enabled FROM j_member WHERE id = ?"
+										authorities-by-username-query="SELECT id as username, authority FROM j_authorities WHERE id = ?"/> -->
+		
+			<security:password-encoder ref="passwordEncoder" />
+		</security:authentication-provider>
+	</security:authentication-manager>
+	
+</beans>

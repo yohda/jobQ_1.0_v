@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc 
+						http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+						http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+						http://www.springframework.org/schema/tx 
+						http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+	<!--
+	<jdbc:embedded-database id="dataSource" type="HSQL">
+		<jdbc:script location= "classpath:/db/sampledb.sql"/>
+	</jdbc:embedded-database>
+    
+     hsql
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="net.sf.log4jdbc.DriverSpy"/>
+        <property name="url" value="jdbc:log4jdbc:hsqldb:hsql://localhost/sampledb"/>
+        <property name="username" value="sa"/>
+    </bean>
+    -->  
+    
+    <!-- Mysql  
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/example" />
+        <property name="username" value="user"/>
+        <property name="password" value="password"/>
+    </bean>
+    -->
+    
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:orcl" />
+        <property name="username" value="system"/>
+        <property name="password" value="root"/>
+    </bean>
+    
+    <!-- <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="dataSource" />
+    </bean> -->
+    
+    <!-- 지금 내 클래스 구조상 게시판 조회와 검색을 하는 부분에서 디자인 패턴중 템플릿 메소드 패턴이 적용되어 있다. 즉, 상속기반으로 클래스간에 상속구조이다. -->
+    <!-- 일반적인 @Transaction을 사용하는 경우 스프링에서는 다이내믹 프록시(java.lang.reflect.Proxy)를 사용하는데, 그 방식은 인터페이스 기반이다. -->
+    <!-- 즉, @Transaction이 먹힌 객체를 프록시 객체로 만들 때, 인터페이스 기반이기 때문에 문제가 발생한다.(최범균 AOP p.208참조) -->
+    <!-- proxy-target-class="true"로 주면 스프링은 CGLIB를 이용하여 클래스에 대한프록시 객체를 생성한다. CGLIB는 대상 클래스를 상속받아 프록시를 구현한다. -->
+    <!-- <tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" /> -->
+    <!-- <tx:annotation-driven transaction-manager="transactionManager" /> -->
+</beans>

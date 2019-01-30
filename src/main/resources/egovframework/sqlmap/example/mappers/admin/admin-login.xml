@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="egovframework.example.admin.login.mapper.AdminLoginMapper">
+	
+	<resultMap type="Authority" id="authority">
+		<result property="authority" column="authority" />
+	</resultMap>
+	
+	<resultMap type="UserInfo" id="userInfo">
+		<id property="id" column="id" />
+		<result property="password" column="password" />
+		
+		<!-- collection태그를 사용할 경우 거의 resultMap으로 써왔는데 이렇게 속성으로 정의된 경우 밑에와 같은 방법으로 정의해야한다. -->
+		<!-- 따로 객체를 만들어 resultMap으로 선언하지 않고 바로 사용 -->
+		<!-- 여기서 ofType을 list로 해버리면 큰일난다. 왜냐면, collection이라는 태그 자체가 list를 만들어주는데 그 리스트안에 들어가는 타입이 ofType으로 명시 되는것이다. -->
+		<!-- 근데 이상하게 오류는 안나는데 값이 이상하게 들어가버린다. -->
+		<!-- 그리고 column속성은 collection태그에서 sql문과 컬럼매칭의 의미가 아니라 select속성에서 실행되는 쿼리문에 파라미터를 전달하기 위한 용도인 것 같다. -->
+		<!-- <collection property="authorities" ofType="string" /> -->
+		<!-- 그래서 결국 그냥 또 객체를 하나 만들었다... 이렇면 안될거같은데 말이지.. 다음에 꼭 알아보자! -->
+		<collection property="authorities" resultMap="authority" />
+		
+		<!-- collection태그에 select속성을 통해서 메소드를 또 실행할 수가 있다. 다음에 자세히 알아보자! -->
+		<!-- <collection property="authorities" ofType="string" column="username" select="getAuthorities" /> -->
+	</resultMap>
+		
+	<select id="authenticate" parameterType="string" resultMap="userInfo">
+		SELECT 
+			jm.id id,
+			jm.password password,
+			ja.authority authority
+		FROM 
+			j_member jm, 
+			j_authorities ja
+		WHERE 
+			jm.id = ja.id
+		AND 
+			ja.id = #{id}
+		AND 
+			jm.type = 'a'
+	</select>
+	
+	<!-- <select id="getAuthorities" resultType="string">
+		SELECT 
+			ja.authority authorities
+		FROM 
+			j_member jm, 
+			j_authorities ja
+		WHERE 
+			jm.id = ja.id
+		AND 
+			ja.id = #{id}
+	</select> -->
+	
+</mapper>
